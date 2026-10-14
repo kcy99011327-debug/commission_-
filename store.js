@@ -228,7 +228,19 @@
     let timer = null, running = false, again = false;
     const subs = new Set();
     const mode = () => ls.get("mode") || ""; // "" (아직 안 고름) | "drive" | "local"
-    function set(s, msg) { status = s; subs.forEach((f) => { try { f(status, msg); } catch (e) {} }); }
+    let lastErr = "", scopeOk = true;
+    function explain(e) {
+      if (!e) return "";
+      if (e.code === "scope") return "로그인할 때 드라이브 권한이 체크되지 않았어요. 로그아웃한 뒤 다시 연결하면서 드라이브 항목을 꼭 체크해 주세요.";
+      let reason = "";
+      try { const j = JSON.parse(e.message); const er = j.error || {}; reason = ((er.errors && er.errors[0] && er.errors[0].reason) || "") + " " + (er.status || "") + " " + JSON.stringify(er.details || ""); } catch (x) {}
+      if (/accessNotConfigured|SERVICE_DISABLED/.test(reason)) return "구글 클라우드에서 Google Drive API가 꺼져 있어요. 'API 및 서비스 → 라이브러리'에서 사용으로 바꾸고 1~2분 뒤 다시 시도해 주세요.";
+      if (/insufficientPermissions|SCOPE_INSUFFICIENT|PERMISSION_DENIED/.test(reason)) return "드라이브 권한이 없어요. 로그아웃한 뒤 다시 연결하면서 드라이브 항목을 체크해 주세요.";
+      if (/storageQuotaExceeded/.test(reason)) return "구글 드라이브 용량이 가득 찼어요.";
+      if (/rateLimit|userRateLimit/.test(reason)) return "요청이 너무 많아요. 잠시 뒤 다시 시도해 주세요.";
+      return "오류 코드: " + (e.code || "알 수 없음") + (reason.trim() ? " (" + reason.trim().slice(0, 120) + ")" : "");
+    }
+    function set(s, msg) { status = s; lastErr = s === "error" ? (msg || "") : ""; subs.forEach((f) => { try { f(status, msg); } catch (e) {} }); }
 
     function loadGIS() {
       if (gisReady) return gisReady;
@@ -251,7 +263,7 @@
         tokenClient = google.accounts.oauth2.initTokenClient({
           client_id: CLIENT_ID, scope: SCOPES,
           callback: (r) => {
-            if (r && r.access_token) { tok = r.access_token; tokExp = now() + (Number(r.expires_in) || 3600) * 1000; fin(res, tok); }
+            if (r && r.access_token) { try { scopeOk = !google.accounts.oauth2.hasGrantedAllScopes || google.accounts.oauth2.hasGrantedAllScopes(r, "https://www.googleapis.com/auth/drive.file"); } catch (x) {} tok = r.access_token; tokExp = now() + (Number(r.expires_in) || 3600) * 1000; fin(res, tok); }
             else fin(rej, err("auth", r && r.error));
           },
           error_callback: (e) => fin(rej, err("auth", e && e.type)),
@@ -360,6 +372,8 @@
       if (!navigator.onLine) { set("offline"); return; }
       running = true; set("syncing");
       try {
+        if (!tok) await getToken(false);
+        if (!scopeOk) throw err("scope");
         await ensureFolders();
         await pull();
         if (dirty || pendingUploads.length || pendingDeletes.length || !dataId) {
@@ -371,7 +385,7 @@
       } catch (e) {
         console.warn("sync", e);
         if (e.code === "auth" || e.code === "auth_timeout" || e.code === "no_client") set("needlogin");
-        else if (!navigator.onLine) set("offline"); else set("error", e.message);
+        else if (!navigator.onLine) set("offline"); else set("error", explain(e));
       } finally {
         running = false;
         if (again) { again = false; schedule(300); }
@@ -422,7 +436,7 @@
     return {
       gfetch, token: () => tok, schedule, run: poke, connect, logout, useLocal, mode,
       hasClient: () => !!CLIENT_ID,
-      status: () => status, lastSync: () => lastSync, email: () => ls.get("email") || "",
+      status: () => status, lastError: () => lastErr, lastSync: () => lastSync, email: () => ls.get("email") || "",
       folderUrl: () => (rootId ? "https://drive.google.com/drive/folders/" + rootId : ""),
       on: (f) => { subs.add(f); f(status); return () => subs.delete(f); },
       init() { if (mode() === "drive") { set("connecting"); run(); } else set(mode() === "local" ? "local" : "off"); },

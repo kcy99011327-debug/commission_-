@@ -61,7 +61,7 @@
     const s = Sync.status(), drive = Sync.mode() === "drive";
     const [t] = LBL[s] || LBL.off;
     if (drive) {
-      box.innerHTML = `<div class="syncCard"><b>${esc(t)}</b><small>${esc(Sync.email() || "구글 계정")}</small><small>마지막 동기화: ${ago(Sync.lastSync())}</small></div>
+      box.innerHTML = `<div class="syncCard"><b>${esc(t)}</b><small>${esc(Sync.email() || "구글 계정")}</small><small>마지막 동기화: ${ago(Sync.lastSync())}</small>${Sync.lastError() ? `<small style="color:var(--bad);line-height:1.5">${esc(Sync.lastError())}</small>` : ""}</div>
         <p class="hint" style="margin-top:.625rem">내 구글 드라이브의 <b>커미션 작업실</b> 폴더에 저장돼요. 같은 계정으로 로그인한 폰·컴퓨터끼리 자동으로 맞춰져요.</p>
         <div class="syncActs">
           ${s === "needlogin" ? `<button class="gbtn" type="button" id="syReconnect">${G}다시 로그인</button>` : `<button class="btn pri" type="button" id="syNow">지금 동기화</button>`}
