@@ -502,7 +502,7 @@ const dday=s=>{const d=pd(s);if(!d)return null;return Math.round((d-today())/864
 const ddLbl=n=>n==null?"–":n===0?"D-DAY":n>0?"D-"+n:"D+"+(-n);
 const md=s=>{const d=pd(s);return d?`${d.getMonth()+1}/${d.getDate()}`:""};
 const pill=st=>`<span class="pill s-${esc((st||"").replace(/\s/g,""))}">${esc(st||"–")}</span>`;
-const imgSrc=id=>window.cmImgSrc(id);
+const imgSrc=(id,thumb)=>window.cmImgSrc(id,thumb);
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
 function store(k,v){try{v===undefined?null:localStorage.setItem(k,v)}catch(e){}}
 function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -634,7 +634,7 @@ function renderGal(){
   const withImg=S.c.filter(c=>(c.images||[]).length).length;
   if(!withImg)h+=`<div class="notice">노션에 있던 이미지는 아직 노션에 있어요. 노션에서 이미지를 저장한 뒤 이 화면에 끌어다 놓거나 붙여넣으면 파일명으로 커미션을 찾아 연결해요.</div>`;
   const tile=c=>{const id=V==="wip"?latest(c):cover(c);const n=(c.images||[]).length;const st=stage(c);
-    return `<div class="tile" role="button" tabindex="0" style="--r:${ratioOf(c,id)}" data-open="${c.id}" data-dk="${esc((V==="wip"?c.due:c.doneDate)||"")}">${id?`<img class="pic" draggable="false" data-aid="${id}" src="${imgSrc(id)}" alt="${esc(c.nick)} 작업물" loading="lazy">`:`<span class="ph">${V==="wip"?"아직 올린 시안 없음":c.notionUrl?"노션에 보관 중":"이미지 없음"}</span>`}
+    return `<div class="tile" role="button" tabindex="0" style="--r:${ratioOf(c,id)}" data-open="${c.id}" data-dk="${esc((V==="wip"?c.due:c.doneDate)||"")}">${id?`<img class="pic" draggable="false" data-aid="${id}" src="${imgSrc(id,1)}" alt="${esc(c.nick)} 작업물" loading="lazy">`:`<span class="ph">${V==="wip"?"아직 올린 시안 없음":c.notionUrl?"노션에 보관 중":"이미지 없음"}</span>`}
     <span class="cap"><strong>${esc(c.nick)}</strong>${capLines(c,V)}</span></div>`};
   h+=`<div class="rowtrack" style="margin-top:0.625rem"><button type="button" class="chip" data-gs="time" aria-pressed="${SO==="time"}">${V==="wip"?"마감 순":"작업 순"}</button><button type="button" class="chip" data-gs="price" aria-pressed="${SO==="price"}">가격대별</button><button type="button" class="chip" data-gs="type" aria-pressed="${SO==="type"}">타입별</button></div>`;
   if(SO==="type"){
@@ -647,7 +647,7 @@ function renderGal(){
     else if(!S.galType){
       h+=`<h2 class="sec">타입별 폴더<span class="meta">${keys.length}개</span></h2><div class="folders">${keys.map(k=>{const g=groups.get(k);
         const covers=g.map(c=>V==="wip"?latest(c):cover(c)).filter(Boolean).slice(0,3);
-        return `<button type="button" class="folder" data-gt="${esc(k)}"><span class="fcov">${covers.length?covers.map(id=>`<img src="${imgSrc(id)}" alt="" loading="lazy">`).join(""):`<i>이미지 없음</i>`}</span><span class="fname"><b>${esc(k)}</b><small>${g.length}건</small></span></button>`}).join("")}</div>`}
+        return `<button type="button" class="folder" data-gt="${esc(k)}"><span class="fcov">${covers.length?covers.map(id=>`<img src="${imgSrc(id,1)}" alt="" loading="lazy">`).join(""):`<i>이미지 없음</i>`}</span><span class="fname"><b>${esc(k)}</b><small>${g.length}건</small></span></button>`}).join("")}</div>`}
     else{const g=groups.get(S.galType);
       h+=`<div class="fback"><button type="button" class="chip" data-gt="">← 타입 목록</button></div><h2 class="sec">${esc(S.galType)}<span class="meta">${g.length}건</span></h2><div class="gal">${g.map(tile).join("")}</div>`}
     $("#view").innerHTML=h;layoutGal();wireBulk();return}
@@ -847,7 +847,7 @@ function openJob(id,pre){
       <label class="full">추가사항<textarea id="f-notes">${esc(c.notes)}</textarea></label>
     </form>
     <h2 class="sec">작업물 백업<span class="meta">${(c.images||[]).length}장</span></h2>
-    <div class="imgs">${(c.images||[]).map((im,i)=>`<figure><img src="${imgSrc(im.id)}" alt="${esc(im.kind)}" data-view="${im.id}" loading="lazy"><figcaption><span>${esc(im.kind)}</span>${assets?`<button type="button" data-rm="${i}">삭제</button>`:""}</figcaption></figure>`).join("")}</div>
+    <div class="imgs">${(c.images||[]).map((im,i)=>`<figure><img src="${imgSrc(im.id,1)}" alt="${esc(im.kind)}" data-view="${im.id}" loading="lazy"><figcaption><span>${esc(im.kind)}</span>${assets?`<button type="button" data-rm="${i}">삭제</button>`:""}</figcaption></figure>`).join("")}</div>
     ${assets?`<div class="upl"><span class="hint">올릴 이미지 종류</span><select id="kind" aria-label="이미지 종류">${opts(KINDS,"완성본")}</select><label class="btn" for="file">＋ 이미지</label><span class="hint" id="uplMsg">이 창에 끌어다 놓거나 Ctrl+V로 붙여넣어도 돼요</span></div>
     <input id="file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>`:`<p class="hint">이미지 올리기는 편집 권한이 있을 때만 가능해요.</p>`}
     <div id="rmConfirm"></div>

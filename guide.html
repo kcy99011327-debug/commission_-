@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>서버 만들기 안내 · 커미션 작업실</title>
+<meta name="theme-color" content="#0e0c11">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+@font-face{font-family:"Pretendard Variable";font-weight:45 920;font-display:swap;src:url("fonts/PretendardVariable.woff2") format("woff2-variations"),url("fonts/PretendardVariable.woff2") format("woff2")}
+:root{--paper:#0e0c11;--sheet:#1a171f;--ink:#f3ede2;--ink-2:#a8a199;--rule:#2e2a35;--accent:#e8b64c;--on-accent:#1a1406;--ok:#74d6a2;--warn:#f2bd68;--warn-soft:#382a14;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--paper:#ece9ee;--sheet:#fff;--ink:#1a1620;--ink-2:#635c6b;--rule:#d6d1db;--accent:#b3203a;--on-accent:#fff;--ok:#1f7a50;--warn:#a8600c;--warn-soft:#fbecd8;color-scheme:light}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 "Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:44rem;margin:0 auto;padding:calc(1.5rem + env(safe-area-inset-top,0px)) 1rem 4rem}
+a{color:var(--accent)}
+h1{font-size:1.625rem;line-height:1.3;margin:.25rem 0 .5rem;letter-spacing:-.01em}
+.lead{color:var(--ink-2);margin:0 0 1.25rem}
+.box{background:var(--sheet);border:1px solid var(--rule);border-radius:.875rem;padding:1rem 1.125rem;margin:0 0 .875rem}
+.step{display:grid;grid-template-columns:2rem minmax(0,1fr);gap:.75rem}
+.num{width:2rem;height:2rem;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:700}
+.step h2{font-size:1.0625rem;margin:.2rem 0 .375rem}
+.step ol,.step ul{margin:.25rem 0 0;padding-left:1.125rem}
+.step li{margin:.2rem 0}
+b.ui{background:color-mix(in srgb,var(--accent) 16%,transparent);padding:0 .3rem;border-radius:.3rem;font-weight:600;white-space:nowrap}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:.625rem;padding:.625rem .75rem;font-size:.875rem;margin-top:.625rem}
+.muted{color:var(--ink-2);font-size:.875rem}
+pre{background:var(--paper);border:1px solid var(--rule);border-radius:.625rem;padding:.75rem;max-height:14rem;overflow:auto;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;margin:.5rem 0 0}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.625rem}
+.btn{border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:.5625rem;padding:.5rem .875rem;font:inherit;font-size:.875rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.875em;background:var(--paper);border:1px solid var(--rule);padding:0 .3rem;border-radius:.3rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="muted">커미션 작업실</span><a class="btn" href="./">앱으로 돌아가기</a></div>
+  <h1>내 서버 만들기 (무료, 약 10분)</h1>
+  <p class="lead">커미션 작업실은 자료를 <b>각자의 Supabase 서버</b>에 저장해요. 아래 순서대로 한 번만 만들면, 폰과 컴퓨터에서 같은 자료를 볼 수 있어요. 컴퓨터에서 하는 게 편해요.</p>
+
+  <div class="box step"><div class="num">1</div><div>
+    <h2>Supabase 가입하기</h2>
+    <ol><li><a href="https://supabase.com/dashboard/sign-up" target="_blank" rel="noopener">supabase.com</a>에 들어가서 가입해요. GitHub 계정이나 이메일로 가입할 수 있어요.</li>
+    <li>결제 정보는 필요 없어요. 무료 플랜 그대로 쓰면 돼요.</li></ol>
+  </div></div>
+
+  <div class="box step"><div class="num">2</div><div>
+    <h2>새 프로젝트 만들기</h2>
+    <ol><li><b class="ui">New project</b>를 눌러요.</li>
+    <li>Name: <code>commission</code> (아무 이름이나 괜찮아요)</li>
+    <li>Database Password: <b class="ui">Generate a password</b>를 눌러 자동으로 만들어요. 앱에서는 안 쓰지만 메모해 두면 좋아요.</li>
+    <li>Region: <b class="ui">Northeast Asia (Seoul)</b>을 골라요.</li>
+    <li><b class="ui">Create new project</b>를 누르고 1~2분 기다려요.</li></ol>
+  </div></div>
+
+  <div class="box step"><div class="num">3</div><div>
+    <h2>설정 스크립트 붙여 넣기</h2>
+    <ol><li>왼쪽 메뉴에서 <b class="ui">SQL Editor</b>를 눌러요.</li>
+    <li>아래 <b>스크립트 복사</b>를 누르고, 빈 편집 칸에 붙여 넣어요.</li>
+    <li>오른쪽 아래 <b class="ui">Run</b>을 눌러요. <code>Success. No rows returned</code>가 나오면 성공이에요.</li></ol>
+    <div class="row"><button class="btn pri" type="button" id="copy">스크립트 복사</button><a class="btn" href="setup.sql" download>파일로 받기</a><span class="muted" id="copyMsg" style="align-self:center"></span></div>
+    <pre id="sql">불러오는 중…</pre>
+    <p class="muted" style="margin:.5rem 0 0">"destructive operation" 같은 확인 창이 뜨면 <b class="ui">Run this query</b>를 눌러도 괜찮아요. 이 스크립트는 여러 번 실행해도 문제없어요.</p>
+  </div></div>
+
+  <div class="box step"><div class="num">4</div><div>
+    <h2>이메일 인증 끄기 (추천)</h2>
+    <ol><li>왼쪽 메뉴 <b class="ui">Authentication</b> → <b class="ui">Sign In / Providers</b> → <b class="ui">Email</b>로 가요.</li>
+    <li><b class="ui">Confirm email</b>을 끄고 <b class="ui">Save</b>를 눌러요.</li></ol>
+    <p class="muted" style="margin:.5rem 0 0">끄지 않으면 앱에서 가입한 뒤 메일함의 인증 링크를 한 번 눌러야 해요. 내 서버엔 나만 가입하니까 꺼도 괜찮아요. 메뉴 이름은 조금 다를 수 있어요.</p>
+  </div></div>
+
+  <div class="box step"><div class="num">5</div><div>
+    <h2>주소와 키 복사하기</h2>
+    <ol><li>프로젝트 화면 위쪽의 <b class="ui">Connect</b> 버튼을 누르거나, <b class="ui">Project Settings</b> → <b class="ui">API Keys</b>로 가요.</li>
+    <li><b>Project URL</b>: <code>https://○○○.supabase.co</code> 모양의 주소</li>
+    <li><b>Publishable key</b>: <code>sb_publishable_…</code>로 시작하는 키 (예전 프로젝트라면 <code>anon public</code> 키, <code>eyJ…</code>로 시작)</li></ol>
+    <div class="note">⚠️ <b>secret</b> 키나 <b>service_role</b> 키는 절대 넣지 마세요. 앱도 막아 두었어요.</div>
+  </div></div>
+
+  <div class="box step"><div class="num">6</div><div>
+    <h2>앱에 연결하고 가입하기</h2>
+    <ol><li><a href="./">앱</a>을 열고 <b class="ui">내 서버 연결하기</b>를 눌러요. (이미 지나갔다면 오른쪽 위 구름 버튼 → <b class="ui">서버 연결하기</b>)</li>
+    <li>Project URL과 Publishable key를 붙여 넣고 <b class="ui">연결하기</b>를 눌러요.</li>
+    <li>처음에는 쓸 이메일과 비밀번호(6자 이상)를 정해서 <b class="ui">처음이면 가입하기</b>를 눌러요.</li></ol>
+  </div></div>
+
+  <div class="box step"><div class="num">7</div><div>
+    <h2>폰에서도 쓰기</h2>
+    <ol><li>폰에서 같은 앱 주소를 열고, 같은 URL·키를 넣은 뒤 이번엔 <b class="ui">로그인</b>을 눌러요.</li>
+    <li>아이폰: Safari <b class="ui">공유</b> → <b class="ui">홈 화면에 추가</b></li>
+    <li>안드로이드: Chrome <b class="ui">⋮</b> → <b class="ui">홈 화면에 추가</b></li></ol>
+    <p class="muted" style="margin:.5rem 0 0">폰과 컴퓨터는 거의 바로 맞춰져요. 인터넷이 끊겨도 기기에 먼저 저장되고, 다시 연결되면 올라가요.</p>
+  </div></div>
+
+  <div class="box"><h2 style="font-size:1.0625rem;margin:0 0 .375rem">알아 두면 좋은 점</h2>
+    <ul style="margin:0;padding-left:1.125rem">
+      <li><b>무료 용량</b>: 이미지 1GB, 자료 500MB. 이미지는 올릴 때 자동으로 줄어들어서(보기용 1600px + 썸네일 600px) 수천 장을 올릴 수 있어요. 사용량은 앱의 구름 버튼에서 볼 수 있어요.</li>
+      <li><b>일주일 동안 안 쓰면</b> 무료 프로젝트가 일시 정지될 수 있어요. 자료는 그대로 있어요. 앱에 "서버에 연결할 수 없어요"가 뜨면 Supabase에 들어가서 프로젝트의 <b class="ui">Resume/Restore</b>를 눌러 주세요.</li>
+      <li>무료 플랜은 계정당 프로젝트 2개까지 켜 둘 수 있어요.</li>
+      <li>원본 이미지는 서버에 올라가지 않아요. 원본은 내 컴퓨터에 따로 보관해 주세요. 설정 → 백업에서 전체 자료를 ZIP으로 받아 둘 수도 있어요.</li>
+    </ul>
+  </div>
+</div>
+<script>
+(async()=>{const pre=document.getElementById("sql");let t="";
+  try{const r=await fetch("setup.sql",{cache:"no-cache"});t=await r.text();pre.textContent=t}catch(e){pre.textContent="스크립트를 불러오지 못했어요. '파일로 받기'를 눌러 주세요."}
+  document.getElementById("copy").onclick=async()=>{const m=document.getElementById("copyMsg");
+    try{await navigator.clipboard.writeText(t);m.textContent="복사했어요 ✓"}
+    catch(e){const s=getSelection(),g=document.createRange();g.selectNodeContents(pre);s.removeAllRanges();s.addRange(g);m.textContent="선택했어요. 복사(⌘C / Ctrl+C) 해 주세요"}}})();
+</script>
+</body>
+</html>
