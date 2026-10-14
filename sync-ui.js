@@ -5,7 +5,7 @@
   const LBL = {
     off: ["저장 위치 고르기", "mute"], local: ["이 기기에만 저장", "mute"], connecting: ["연결하는 중", "warn"],
     syncing: ["동기화 중", "warn"], ok: ["동기화됨", "ok"], offline: ["오프라인", "mute"],
-    error: ["동기화 오류", "bad"], needlogin: ["다시 로그인", "bad"],
+    retry: ["다시 연결 중", "warn"], error: ["동기화 오류", "bad"], needlogin: ["다시 로그인", "bad"],
   };
   const css = document.createElement("style");
   css.textContent = `

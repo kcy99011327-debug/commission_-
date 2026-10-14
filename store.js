@@ -238,7 +238,8 @@
       if (/insufficientPermissions|SCOPE_INSUFFICIENT|PERMISSION_DENIED/.test(reason)) return "드라이브 권한이 없어요. 로그아웃한 뒤 다시 연결하면서 드라이브 항목을 체크해 주세요.";
       if (/storageQuotaExceeded/.test(reason)) return "구글 드라이브 용량이 가득 찼어요.";
       if (/rateLimit|userRateLimit/.test(reason)) return "요청이 너무 많아요. 잠시 뒤 다시 시도해 주세요.";
-      return "오류 코드: " + (e.code || "알 수 없음") + (reason.trim() ? " (" + reason.trim().slice(0, 120) + ")" : "");
+      if (!e.code) return "인터넷 연결이 불안정해서 동기화가 끊겼어요. 잠시 뒤 지금 동기화를 눌러 주세요." + (e.message ? " (" + String(e.message).slice(0, 80) + ")" : "");
+      return "오류 코드: " + e.code + (reason.trim() ? " (" + reason.trim().slice(0, 120) + ")" : "");
     }
     function set(s, msg) { status = s; lastErr = s === "error" ? (msg || "") : ""; subs.forEach((f) => { try { f(status, msg); } catch (e) {} }); }
 
@@ -363,6 +364,9 @@
       remoteVer = r.version; ls.set("dataVer", remoteVer);
     }
 
+    /* 통신이 잠깐 끊긴 경우(화면 전환, 약한 신호): 알아서 몇 번 다시 시도 */
+    let netFails = 0;
+    const isNetErr = (e) => !e.code && (e instanceof TypeError || /load failed|failed to fetch|networkerror|network connection|aborted|cancel/i.test(String(e.message)));
     let dirty = ls.get("dirty") === "1";
     function markDirty(v) { dirty = v; ls.set("dirty", v ? "1" : null); }
 
@@ -381,11 +385,13 @@
           markDirty(false);
           await pushData();
         }
-        lastSync = now(); ls.set("lastSync", String(lastSync)); set("ok");
+        lastSync = now(); ls.set("lastSync", String(lastSync)); netFails = 0; set("ok");
       } catch (e) {
         console.warn("sync", e);
         if (e.code === "auth" || e.code === "auth_timeout" || e.code === "no_client") set("needlogin");
-        else if (!navigator.onLine) set("offline"); else set("error", explain(e));
+        else if (!navigator.onLine) set("offline");
+        else if (isNetErr(e) && netFails < 4) { netFails++; set("retry"); again = false; clearTimeout(timer); timer = setTimeout(run, 3000 * netFails); }
+        else set("error", explain(e));
       } finally {
         running = false;
         if (again) { again = false; schedule(300); }
@@ -428,13 +434,13 @@
     function useLocal() { ls.set("mode", "local"); set("local"); }
 
     /* 다른 기기에서 바꾼 내용 가져오기 */
-    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") poke(); });
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { netFails = 0; poke(); } });
     window.addEventListener("online", poke);
     window.addEventListener("offline", () => mode() === "drive" && set("offline"));
     setInterval(() => { if (document.visibilityState === "visible" && !running && mode() === "drive" && status !== "needlogin") run(); }, 30000);
 
     return {
-      gfetch, token: () => tok, schedule, run: poke, connect, logout, useLocal, mode,
+      gfetch, token: () => tok, schedule, run: () => { netFails = 0; poke(); }, connect, logout, useLocal, mode,
       hasClient: () => !!CLIENT_ID,
       status: () => status, lastError: () => lastErr, lastSync: () => lastSync, email: () => ls.get("email") || "",
       folderUrl: () => (rootId ? "https://drive.google.com/drive/folders/" + rootId : ""),

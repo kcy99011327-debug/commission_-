@@ -1,6 +1,6 @@
 /* 앱 화면 파일을 기기에 담아 두어, 인터넷이 약해도 바로 열리게 해요.
    앱을 고쳐서 다시 올릴 때는 VERSION 숫자를 하나 올려 주세요. */
-const VERSION = "cm-v2";
+const VERSION = "cm-v3";
 const SHELL = ["./", "index.html", "store.js", "sync-ui.js", "config.js", "manifest.webmanifest",
   "fonts/PretendardVariable.woff2", "icons/icon-192.png", "icons/icon-512.png"];
 
