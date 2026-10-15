@@ -1,16 +1,22 @@
 {
-  "name": "커미션 작업실",
-  "short_name": "커미션",
-  "description": "커미션 일정·작업물·답장 템플릿 관리",
-  "lang": "ko",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#0e0c11",
-  "theme_color": "#0e0c11",
-  "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+ "name": "COMMISSION 작업실",
+ "short_name": "커미션",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#0e0c11",
+ "theme_color": "#0e0c11",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
 }
